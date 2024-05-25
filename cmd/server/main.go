@@ -26,11 +26,14 @@ func main() {
 		fmt.Println("Error while creating connection channel", err)
 	}
 	err = pubsub.PublishJSON(serverChan, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{IsPaused: true})
+
 	if err != nil {
 		fmt.Println("Error while publishing game state to pubsub", err)
 	}
+	_, _, err = pubsub.DeclareAndBind(connection, routing.ExchangePerilTopic, routing.GameLogSlug, fmt.Sprintf("%v.*", routing.GameLogSlug), 0)
 
 	gamelogic.PrintServerHelp()
+repl:
 	for {
 		input := gamelogic.GetInput()
 		if len(input) != 0 {
@@ -38,7 +41,12 @@ func main() {
 			switch command {
 			case "pause":
 				fmt.Println("The game is being paused")
-				err = pubsub.PublishJSON(serverChan, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{IsPaused: true})
+				err = pubsub.PublishJSON(
+					serverChan,
+					routing.ExchangePerilDirect,
+					routing.PauseKey,
+					routing.PlayingState{IsPaused: true},
+				)
 				if err != nil {
 					fmt.Println("Error while publishing game state to pubsub", err)
 				}
@@ -50,7 +58,7 @@ func main() {
 				}
 			case "quit":
 				fmt.Println("Exiting the game")
-				break
+				break repl
 			default:
 				fmt.Printf("The command `%s` isn't valid\n", command)
 			}
