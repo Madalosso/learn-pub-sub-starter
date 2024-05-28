@@ -25,6 +25,7 @@ func SubscribeJSON[T any](
 	simpleQueueType SimpleQueueType,
 	handler func(T) AckType,
 ) error {
+	// can't we use channel instead of conn since we only use conn to open a new channel?
 	channel, queue, err := DeclareAndBind(conn, exchange, queueName, key, simpleQueueType)
 	if err != nil {
 		fmt.Println("Error while declare+bind on subscribeJSON", err)

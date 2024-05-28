@@ -30,7 +30,7 @@ func main() {
 	if err != nil {
 		fmt.Println("Error while publishing game state to pubsub", err)
 	}
-	_, _, err = pubsub.DeclareAndBind(connection, routing.ExchangePerilTopic, routing.GameLogSlug, fmt.Sprintf("%v.*", routing.GameLogSlug), 0)
+	_, _, err = pubsub.DeclareAndBind(connection, routing.ExchangePerilTopic, routing.GameLogSlug, fmt.Sprintf("%s.*", routing.GameLogSlug), 0)
 
 	gamelogic.PrintServerHelp()
 repl:
