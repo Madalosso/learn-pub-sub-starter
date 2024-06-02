@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"time"
 
 	gamelogic "github.com/Madalosso/learn-pub-sub-starter/internal/gamelogic"
@@ -65,6 +67,22 @@ repl:
 				gamelogic.PrintClientHelp()
 			case "spam":
 				fmt.Println("Spamming not allowed yet!")
+				n, err := strconv.Atoi(input[1])
+				if err != nil {
+					fmt.Println("Spamming args 1 is not integer!")
+					os.Exit(1)
+				}
+				for i := 0; i < n; i++ {
+					msg := gamelogic.GetMaliciousLog()
+					gl := routing.GameLog{
+						CurrentTime: time.Now(),
+						Username:    gs.GetUsername(),
+						Message:     msg,
+					}
+					pubsub.PublishGob(publishCh, routing.ExchangePerilTopic, routing.GameLogSlug+"."+username, gl)
+
+				}
+
 			case "quit":
 				gamelogic.PrintQuit()
 				break repl
@@ -142,7 +160,7 @@ func handlerWar(gs *gamelogic.GameState, logChannel *amqp.Channel) func(gamelogi
 		if len(gameLog.Message) > 0 {
 			logErr := pubsub.PublishGob(logChannel, routing.ExchangePerilTopic, fmt.Sprintf("%s.%s", routing.GameLogSlug, gs.GetUsername()), gameLog)
 			if logErr != nil {
-				fmt.Println("Erro publishing game log via PublishGob: ", logErr)
+				fmt.Println("Error publishing game log via PublishGob: ", logErr)
 				return pubsub.NackRequeue
 			}
 		}

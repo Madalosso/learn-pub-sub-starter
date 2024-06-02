@@ -32,6 +32,8 @@ func main() {
 	}
 	_, _, err = pubsub.DeclareAndBind(connection, routing.ExchangePerilTopic, routing.GameLogSlug, fmt.Sprintf("%s.*", routing.GameLogSlug), 0)
 
+	pubsub.SubscribeGob(connection, routing.ExchangePerilTopic, routing.GameLogSlug, fmt.Sprintf("%s.*", routing.GameLogSlug), 0, handleLog())
+
 	gamelogic.PrintServerHelp()
 repl:
 	for {
@@ -70,4 +72,12 @@ repl:
 	signal.Notify(signalChan, os.Interrupt)
 	<-signalChan
 	fmt.Printf("\nConnection shutdown\n")
+}
+
+func handleLog() func(gl routing.GameLog) pubsub.AckType {
+	return func(gl routing.GameLog) pubsub.AckType {
+		defer fmt.Printf("> ")
+		gamelogic.WriteLog(gl)
+		return pubsub.Ack
+	}
 }
